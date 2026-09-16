@@ -418,6 +418,39 @@ def test_macro_context_methods():
 
 
 # ===========================================================================
+# GZU demo project (SYNTHETIC/DEMO DATA)
+# ===========================================================================
+def _load_gzu_demo() -> dm.ProjectInput:
+    from ui.app import _load_demo_projects
+    projects = _load_demo_projects()
+    for p in projects:
+        if p.project_id == "GZU-HUB-001":
+            return p
+    return dm.ProjectInput()
+
+
+def test_gzu_innovation_hub_demo():
+    p = _load_gzu_demo()
+    if p.project_id != "GZU-HUB-001":
+        return False
+    if p.project_name != "GZU Innovation Hub — Masvingo Campus":
+        return False
+    if p.sector != "education" or p.province != "Masvingo":
+        return False
+    r = project_cash_flows(p, fixture_macro())
+    for key in ("npv", "mirr", "payback", "discounted_payback", "pi", "eaa"):
+        if not np.isfinite(float(r[key])):
+            return False
+    if not np.isfinite(float(r["irr"])):
+        return False
+    if not (-1.0 < float(r["irr"]) < 2.0):
+        return False
+    if not np.isfinite(float(r["expected_capex"])):
+        return False
+    return np.isfinite(float(r["arr"]))
+
+
+# ===========================================================================
 # Runner
 # ===========================================================================
 def run_all() -> int:
